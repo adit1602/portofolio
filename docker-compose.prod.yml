@@ -34,6 +34,11 @@ services:
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
       ADMIN_EMAIL: ${ADMIN_EMAIL}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      # Browser origin allowed by CORS (the Next.js frontend)
+      FRONTEND_URL: ${FRONTEND_URL}
+      # Shared cookie domain so the refresh_token cookie is visible to the
+      # web app's middleware when API and web live on different subdomains
+      COOKIE_DOMAIN: ${COOKIE_DOMAIN}
     volumes:
       - uploads_data:/app/uploads
     depends_on:

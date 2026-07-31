@@ -8,6 +8,7 @@ import {
   HttpStatus,
   UnauthorizedException,
 } from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
 import { Request, Response } from 'express'
 import { AuthService } from './auth.service'
 import { LoginDto } from './dto/login.dto'
@@ -17,7 +18,17 @@ const REFRESH_TOKEN_COOKIE = 'refresh_token'
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly config: ConfigService,
+  ) {}
+
+  // Shared across api.<domain> and <domain> when web + API live on different
+  // subdomains, so the web app's middleware can read the cookie. Unset in
+  // local dev where both run on localhost with different ports.
+  private get cookieDomain(): string | undefined {
+    return this.config.get<string>('COOKIE_DOMAIN')
+  }
 
   /**
    * POST /api/auth/login
@@ -34,6 +45,7 @@ export class AuthController {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
+      domain: this.cookieDomain,
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days in ms
     })
 
@@ -63,7 +75,7 @@ export class AuthController {
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   logout(@Res({ passthrough: true }) res: Response) {
-    res.clearCookie(REFRESH_TOKEN_COOKIE)
+    res.clearCookie(REFRESH_TOKEN_COOKIE, { domain: this.cookieDomain })
     return { message: 'Logged out' }
   }
 }
