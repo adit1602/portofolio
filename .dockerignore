@@ -1,0 +1,25 @@
+# Exclude node_modules — pnpm workspace symlinks break Docker build context
+**/node_modules
+
+# Exclude Next.js build cache
+**/.next
+**/.turbo
+
+# Exclude local env files
+**/.env
+**/.env.local
+**/.env.*.local
+
+# Exclude dist output (rebuilt inside Docker)
+**/dist
+
+# Exclude git
+.git
+.github
+
+# Exclude uploads (use named volume in prod)
+apps/api/uploads
+
+# Exclude OS files
+.DS_Store
+Thumbs.db

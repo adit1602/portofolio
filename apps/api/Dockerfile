@@ -1,6 +1,9 @@
 # ─── Stage 1: Builder ───────────────────────────────────────────────────────
 FROM node:20-alpine AS builder
 
+# OpenSSL needed by Prisma engines on Alpine
+RUN apk add --no-cache openssl
+
 # Install pnpm
 RUN corepack enable && corepack prepare pnpm@9.14.2 --activate
 
@@ -15,40 +18,40 @@ COPY packages/ ./packages/
 # Copy API source
 COPY apps/api/ ./apps/api/
 
-# Install all dependencies (including devDeps for building)
+# Install all dependencies
 RUN pnpm install --frozen-lockfile
 
-# Generate Prisma client
-RUN pnpm --filter=@portfolio/api exec prisma generate
+# Generate Prisma client for TypeScript types
+# pnpm exec runs from the package root (/app/apps/api), so schema path is relative there
+RUN cd /app/apps/api && ./node_modules/.bin/prisma generate --schema=./prisma/schema.prisma
 
 # Build the API
 RUN pnpm --filter=@portfolio/api run build
 
-# Prune to production deps only
+# Prune to production deps only (creates flat node_modules in /app/pruned)
 RUN pnpm --filter=@portfolio/api --prod deploy /app/pruned
 
-# Copy generated prisma client into pruned output
-RUN cp -r apps/api/node_modules/.prisma /app/pruned/node_modules/.prisma || true
+# Re-generate Prisma client in the pruned flat node_modules
+# This ensures the correct linux-musl binary is present for the runner image
+COPY apps/api/prisma/schema.prisma /app/pruned/prisma/schema.prisma
+RUN cd /app/pruned && /app/apps/api/node_modules/.bin/prisma generate --schema=./prisma/schema.prisma
 
 # ─── Stage 2: Runner ────────────────────────────────────────────────────────
 FROM node:20-alpine AS runner
 
-RUN apk add --no-cache dumb-init
+# OpenSSL needed at runtime by Prisma query engine
+RUN apk add --no-cache openssl dumb-init
 
 WORKDIR /app
 
-# Copy pruned production deps
+# Copy pruned production deps (includes .prisma binaries from generate above)
 COPY --from=builder /app/pruned/node_modules ./node_modules
 
 # Copy built dist
 COPY --from=builder /app/apps/api/dist ./dist
 
-# Copy prisma schema & migrations (needed for migrate deploy at startup)
+# Copy prisma schema + migrations (needed for migrate deploy at startup)
 COPY --from=builder /app/apps/api/prisma ./prisma
-
-# Copy Prisma client binaries
-COPY --from=builder /app/apps/api/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/apps/api/node_modules/@prisma ./node_modules/@prisma
 
 # Create uploads directory
 RUN mkdir -p /app/uploads
@@ -58,12 +61,11 @@ RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 RUN chown -R appuser:appgroup /app
 USER appuser
 
-# Copy entrypoint script
-COPY --chown=appuser:appgroup entrypoint.sh /app/entrypoint.sh
+# Copy entrypoint script (path relative to monorepo root build context)
+COPY --chown=appuser:appgroup apps/api/entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
 
 EXPOSE 3001
 
-# Use dumb-init to handle signals properly
 ENTRYPOINT ["dumb-init", "/app/entrypoint.sh"]
 CMD ["node", "dist/main"]

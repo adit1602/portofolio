@@ -15,6 +15,9 @@ COPY packages/ ./packages/
 # Copy Web source
 COPY apps/web/ ./apps/web/
 
+# Ensure public dir exists (Next.js requires it)
+RUN mkdir -p /app/apps/web/public
+
 # Install all dependencies
 RUN pnpm install --frozen-lockfile
 
@@ -22,6 +25,7 @@ RUN pnpm install --frozen-lockfile
 # NEXT_PUBLIC_API_URL must be set at build time for static pages
 ARG NEXT_PUBLIC_API_URL=http://localhost:3001
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN pnpm --filter=@portfolio/web run build
 
@@ -41,6 +45,9 @@ RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 # Copy Next.js standalone output
 COPY --from=builder --chown=appuser:appgroup /app/apps/web/.next/standalone ./
 COPY --from=builder --chown=appuser:appgroup /app/apps/web/.next/static ./apps/web/.next/static
+
+# Copy public assets (may be empty, but must exist for Next.js to serve static files)
+RUN mkdir -p ./apps/web/public
 COPY --from=builder --chown=appuser:appgroup /app/apps/web/public ./apps/web/public
 
 USER appuser
