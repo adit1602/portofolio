@@ -39,6 +39,10 @@ services:
       # Shared cookie domain so the refresh_token cookie is visible to the
       # web app's middleware when API and web live on different subdomains
       COOKIE_DOMAIN: ${COOKIE_DOMAIN}
+      # Internal URL of the web app + shared secret, used to trigger
+      # on-demand ISR revalidation after admin writes
+      WEB_URL: http://web:3000
+      REVALIDATE_SECRET: ${REVALIDATE_SECRET}
     volumes:
       - uploads_data:/app/uploads
     depends_on:
@@ -63,6 +67,8 @@ services:
       NODE_ENV: production
       # Server-side API URL (goes through Docker internal network)
       API_URL: http://api:3001
+      # Shared secret checked by /api/revalidate — must match the API's value
+      REVALIDATE_SECRET: ${REVALIDATE_SECRET}
     depends_on:
       - api
     ports:

@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config'
 import cookieParser from 'cookie-parser'
 import { AppModule } from './app.module'
 import { UPLOADS_DIR } from './uploads/uploads.constants'
+import { RevalidateInterceptor } from './common/revalidate.interceptor'
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule)
@@ -34,6 +35,9 @@ async function bootstrap() {
 
   // Global API prefix
   app.setGlobalPrefix('api')
+
+  // Notify the web app to revalidate the landing page after admin writes
+  app.useGlobalInterceptors(new RevalidateInterceptor(configService))
 
   const port = configService.get<number>('PORT', 3001)
   await app.listen(port)
