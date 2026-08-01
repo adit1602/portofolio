@@ -33,7 +33,7 @@ export default function Footer({ settings, socialLinks }: FooterProps) {
           {/* Brand */}
           <div>
             <Link href="/" className="text-lg font-bold gradient-text">
-              {'<DevPortfolio />'}
+              {'<DitzPortfolio />'}
             </Link>
             <p className="text-sm text-slate-600 dark:text-slate-500 mt-1">
               {settings['hero_title'] ?? 'Backend & DevOps Engineer'}

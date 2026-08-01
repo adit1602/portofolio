@@ -83,9 +83,8 @@ export default function Navbar() {
     <header className="fixed top-5 inset-x-0 z-50 flex justify-center px-4 pointer-events-none">
       <div className="relative pointer-events-auto">
         <nav
-          className={`liquid-glass flex items-center gap-1 rounded-full pl-4 pr-2 py-2 sm:pl-5 sm:pr-2.5 ${
-            scrolled ? 'liquid-glass-scrolled' : ''
-          }`}
+          className={`liquid-glass flex items-center gap-1 rounded-full pl-4 pr-2 py-2 sm:pl-5 sm:pr-2.5 ${scrolled ? 'liquid-glass-scrolled' : ''
+            }`}
         >
           {/* Logo / Name */}
           <Link
@@ -93,7 +92,7 @@ export default function Navbar() {
             id="nav-logo"
             className="text-base sm:text-lg font-bold gradient-text hover:opacity-80 transition-opacity duration-[250ms] shrink-0"
           >
-            {'<DevPortfolio />'}
+            {'<Ditzportfolio />'}
           </Link>
 
           {/* Desktop links */}
@@ -101,9 +100,8 @@ export default function Navbar() {
             {/* Sliding active-item capsule */}
             <li
               aria-hidden
-              className={`liquid-glass-indicator absolute inset-y-0 rounded-full ${
-                indicator.ready ? 'opacity-100' : 'opacity-0'
-              }`}
+              className={`liquid-glass-indicator absolute inset-y-0 rounded-full ${indicator.ready ? 'opacity-100' : 'opacity-0'
+                }`}
               style={{
                 width: `${indicator.width}px`,
                 transform: `translateX(${indicator.left}px)`,
@@ -117,11 +115,10 @@ export default function Navbar() {
                   }}
                   href={link.href}
                   onClick={() => setActiveId(link.id)}
-                  className={`block px-4 py-1.5 rounded-full text-sm font-medium tracking-wide transition-all duration-[250ms] ease-out hover:scale-105 ${
-                    activeId === link.id
+                  className={`block px-4 py-1.5 rounded-full text-sm font-medium tracking-wide transition-all duration-[250ms] ease-out hover:scale-105 ${activeId === link.id
                       ? 'text-slate-900 dark:text-white'
                       : 'text-slate-600/80 dark:text-slate-300/80 hover:text-slate-900 dark:hover:text-white'
-                  }`}
+                    }`}
                 >
                   {link.label}
                 </a>
@@ -171,11 +168,10 @@ export default function Navbar() {
                       setActiveId(link.id)
                       setMenuOpen(false)
                     }}
-                    className={`block px-4 py-2.5 rounded-full text-sm font-medium tracking-wide transition-all duration-[250ms] ease-out ${
-                      activeId === link.id
+                    className={`block px-4 py-2.5 rounded-full text-sm font-medium tracking-wide transition-all duration-[250ms] ease-out ${activeId === link.id
                         ? 'bg-slate-900/[0.08] dark:bg-white/[0.14] text-slate-900 dark:text-white'
                         : 'text-slate-600/80 dark:text-slate-300/80 hover:text-slate-900 dark:hover:text-white hover:bg-slate-900/[0.05] dark:hover:bg-white/[0.08]'
-                    }`}
+                      }`}
                   >
                     {link.label}
                   </a>

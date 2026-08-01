@@ -56,7 +56,7 @@ export default function AuthenticatedAdminLayout({ children }: { children: React
         {/* Brand */}
         <div className="p-6 border-b border-white/5">
           <Link href="/" className="text-sm font-bold gradient-text">
-            {'<DevPortfolio />'}
+            {'<DitzPortfolio />'}
           </Link>
           <p className="text-xs text-slate-600 mt-1">Admin Panel</p>
         </div>
@@ -66,15 +66,15 @@ export default function AuthenticatedAdminLayout({ children }: { children: React
           <ul className="space-y-1">
             {NAV_ITEMS.map((item) => {
               const isActive = pathname === item.href || (pathname.startsWith(item.href) && item.href !== '/admin/dashboard')
-              
+
               return (
                 <li key={item.href}>
                   <Link
                     href={item.href}
                     className={clsx(
                       'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors font-medium',
-                      isActive 
-                        ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20' 
+                      isActive
+                        ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'
                         : 'text-slate-300 hover:text-white hover:bg-white/5 border border-transparent'
                     )}
                   >
