@@ -46,6 +46,8 @@ module.exports = {
         'slide-up': 'slideUp 0.6s ease-out',
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         eq: 'eq 0.9s ease-in-out infinite',
+        'marquee-left': 'marqueeLeft 32s linear infinite',
+        'marquee-right': 'marqueeRight 38s linear infinite',
       },
       keyframes: {
         fadeIn: {
@@ -59,6 +61,14 @@ module.exports = {
         eq: {
           '0%, 100%': { transform: 'scaleY(0.4)' },
           '50%': { transform: 'scaleY(1)' },
+        },
+        marqueeLeft: {
+          '0%': { transform: 'translateX(0)' },
+          '100%': { transform: 'translateX(-50%)' },
+        },
+        marqueeRight: {
+          '0%': { transform: 'translateX(-50%)' },
+          '100%': { transform: 'translateX(0)' },
         },
       },
     },

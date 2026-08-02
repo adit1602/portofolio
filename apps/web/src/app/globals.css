@@ -120,6 +120,12 @@
     @apply w-3 h-3 rounded-full bg-accent-500 ring-4 ring-accent-500/20 shrink-0;
   }
 
+  /* Fades the left/right edges of a horizontally-scrolling marquee row */
+  .marquee-row {
+    mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+  }
+
   /* ============================================================
      Liquid Glass (iOS 26 style floating navbar)
      ============================================================ */

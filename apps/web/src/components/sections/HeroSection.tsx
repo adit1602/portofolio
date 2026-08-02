@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { resolveImageUrl } from '@/lib/media'
+import SocialIcon from '@/components/layout/SocialIcon'
 
 interface HeroSectionProps {
   settings: Record<string, string>
@@ -109,9 +110,9 @@ export default function HeroSection({ settings, socialLinks }: HeroSectionProps)
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={link.platform}
-                className="text-slate-600 dark:text-slate-500 hover:text-accent-600 dark:hover:text-accent-400 transition-colors duration-200 text-sm font-medium hover:underline"
+                className="text-slate-600 dark:text-slate-500 hover:text-accent-600 dark:hover:text-accent-400 hover:-translate-y-0.5 transition-all duration-200"
               >
-                {link.platform}
+                <SocialIcon icon={link.icon} platform={link.platform} />
               </a>
             ))}
           </div>

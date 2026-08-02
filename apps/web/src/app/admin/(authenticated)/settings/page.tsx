@@ -6,6 +6,7 @@ import { updateSiteSettings, createSocialLink, deleteSocialLink, uploadImage, So
 import { getSiteSettings, getSocialLinks } from '@/lib/api' // using public fetch for reads to share cache if needed
 import { resolveImageUrl } from '@/lib/media'
 import ImageCropModal from '@/components/admin/ImageCropModal'
+import SocialIcon from '@/components/layout/SocialIcon'
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState<Record<string, string>>({})
@@ -13,6 +14,8 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true)
   const [savingSettings, setSavingSettings] = useState(false)
   const [addingLink, setAddingLink] = useState(false)
+  const [newLinkIcon, setNewLinkIcon] = useState('')
+  const [uploadingLinkIcon, setUploadingLinkIcon] = useState(false)
   const [uploadingPhoto, setUploadingPhoto] = useState(false)
   const [photoUrl, setPhotoUrl] = useState('')
   const [cropSrc, setCropSrc] = useState<string | null>(null)
@@ -145,11 +148,27 @@ export default function SettingsPage() {
       await createSocialLink(data)
       const form = e.target as HTMLFormElement
       form.reset()
+      setNewLinkIcon('')
       await loadData() // Refresh list
     } catch (err: any) {
       alert('Failed to add link: ' + err.message)
     } finally {
       setAddingLink(false)
+    }
+  }
+
+  async function handleLinkIconUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploadingLinkIcon(true)
+    try {
+      const { url } = await uploadImage(file)
+      setNewLinkIcon(url)
+    } catch (err: any) {
+      alert('Failed to upload icon: ' + err.message)
+    } finally {
+      setUploadingLinkIcon(false)
+      e.target.value = ''
     }
   }
 
@@ -316,9 +335,39 @@ export default function SettingsPage() {
                   <Input id="platform" name="platform" required placeholder="e.g. GitHub" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="icon">Icon Name</Label>
-                  <Input id="icon" name="icon" required placeholder="e.g. GithubIcon" />
+                  <Label htmlFor="icon">Icon</Label>
+                  <Input
+                    id="icon"
+                    name="icon"
+                    required
+                    value={newLinkIcon}
+                    onChange={(e) => setNewLinkIcon(e.target.value)}
+                    placeholder="github, linkedin, twitter, website..."
+                  />
                 </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="iconUpload">Or upload a custom icon (PNG/SVG/WebP)</Label>
+                <div className="flex items-center gap-3">
+                  <Input
+                    id="iconUpload"
+                    type="file"
+                    accept="image/png, image/svg+xml, image/webp, image/jpeg, image/gif"
+                    onChange={handleLinkIconUpload}
+                    disabled={uploadingLinkIcon}
+                    className="max-w-xs"
+                  />
+                  {uploadingLinkIcon && <span className="text-xs text-slate-500">Uploading...</span>}
+                  {newLinkIcon && !uploadingLinkIcon && (
+                    <span className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white shrink-0">
+                      <SocialIcon icon={newLinkIcon} platform="preview" />
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-slate-500">
+                  Only github, linkedin, twitter, and website have built-in icons — anything else
+                  needs an uploaded image or shows as text.
+                </p>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -344,13 +393,16 @@ export default function SettingsPage() {
               <div className="space-y-3">
                 {socialLinks.sort((a, b) => a.order - b.order).map(link => (
                   <div key={link.id} className="flex items-center justify-between p-3 rounded-lg border border-white/5 bg-white/5 hover:bg-white/10 transition-colors">
-                    <div>
-                      <div className="text-sm font-medium text-white flex items-center gap-2">
-                        {link.platform} <span className="text-xs text-slate-500">({link.icon})</span>
+                    <div className="flex items-center gap-3">
+                      <span className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white shrink-0">
+                        <SocialIcon icon={link.icon} platform={link.platform} />
+                      </span>
+                      <div>
+                        <div className="text-sm font-medium text-white">{link.platform}</div>
+                        <a href={link.url} target="_blank" rel="noreferrer" className="text-xs text-slate-400 hover:text-indigo-400 truncate max-w-[200px] block">
+                          {link.url}
+                        </a>
                       </div>
-                      <a href={link.url} target="_blank" rel="noreferrer" className="text-xs text-slate-400 hover:text-indigo-400 truncate max-w-[200px] block">
-                        {link.url}
-                      </a>
                     </div>
                     <button
                       onClick={() => handleDeleteLink(link.id)}
