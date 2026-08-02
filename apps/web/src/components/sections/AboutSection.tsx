@@ -4,15 +4,16 @@ import Reveal from '@/components/motion/Reveal'
 import SpotlightGlow from '@/components/motion/SpotlightGlow'
 import { useSpotlight } from '@/components/motion/useSpotlight'
 
-interface AboutSectionProps {
-  settings: Record<string, string>
+interface AboutStats {
+  yearsExperience: number
+  projectsShipped: number
+  technologies: number
 }
 
-const HIGHLIGHTS = [
-  { label: 'Years of Experience', value: '5+' },
-  { label: 'Projects Shipped', value: '30+' },
-  { label: 'Open Source Contributions', value: '15+' },
-]
+interface AboutSectionProps {
+  settings: Record<string, string>
+  stats: AboutStats
+}
 
 function StatCard({ label, value }: { label: string; value: string }) {
   const { ref, handleMouseMove } = useSpotlight<HTMLDivElement>()
@@ -30,11 +31,21 @@ function StatCard({ label, value }: { label: string; value: string }) {
   )
 }
 
-export default function AboutSection({ settings }: AboutSectionProps) {
-  const aboutText = settings['about_text'] ?? 'Passionate backend engineer...'
+export default function AboutSection({ settings, stats }: AboutSectionProps) {
+  const aboutText = settings['about_text'] ?? 'Passionate backend engineer building reliable, scalable systems.'
+  const aboutText2 = settings['about_text_2']
+
+  const highlights = [
+    {
+      label: 'Years of Experience',
+      value: stats.yearsExperience > 0 ? `${stats.yearsExperience}+` : 'New',
+    },
+    { label: 'Projects Shipped', value: `${stats.projectsShipped}+` },
+    { label: 'Technologies', value: `${stats.technologies}+` },
+  ]
 
   return (
-    <section id="about" className="py-24 bg-slate-50 dark:bg-dark-900/30">
+    <section id="about" className="py-24 bg-slate-200/50 dark:bg-dark-900/30">
       <div className="section-container">
         {/* Section header */}
         <Reveal className="mb-12">
@@ -49,15 +60,14 @@ export default function AboutSection({ settings }: AboutSectionProps) {
           {/* Text */}
           <Reveal delay={0.1}>
             <p className="text-slate-700 dark:text-slate-300 text-lg leading-relaxed mb-6">{aboutText}</p>
-            <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
-              When I&apos;m not writing code, you&apos;ll find me contributing to open-source projects,
-              reading about distributed systems, or tinkering with home lab infrastructure.
-            </p>
+            {aboutText2 && (
+              <p className="text-slate-600 dark:text-slate-400 leading-relaxed">{aboutText2}</p>
+            )}
           </Reveal>
 
           {/* Stats */}
           <Reveal delay={0.2} className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-4">
-            {HIGHLIGHTS.map((item) => (
+            {highlights.map((item) => (
               <StatCard key={item.label} label={item.label} value={item.value} />
             ))}
           </Reveal>

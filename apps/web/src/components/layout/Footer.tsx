@@ -27,7 +27,7 @@ export default function Footer({ settings, socialLinks }: FooterProps) {
   const currentYear = new Date().getFullYear()
 
   return (
-    <footer className="border-t border-slate-900/10 dark:border-white/5 bg-slate-50 dark:bg-dark-900/50 mt-20 transition-colors duration-300">
+    <footer className="border-t border-slate-900/10 dark:border-white/5 bg-slate-200/50 dark:bg-dark-900/50 mt-20 transition-colors duration-300">
       <div className="section-container py-12">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           {/* Brand */}

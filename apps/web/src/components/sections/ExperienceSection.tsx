@@ -68,7 +68,7 @@ export default function ExperienceSection({ experiences }: ExperienceSectionProp
   }
 
   return (
-    <section id="experience" className="py-24 bg-slate-50 dark:bg-dark-900/30">
+    <section id="experience" className="py-24 bg-slate-200/50 dark:bg-dark-900/30">
       <div className="section-container">
         {/* Header */}
         <Reveal className="mb-12">

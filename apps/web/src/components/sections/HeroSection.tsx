@@ -16,6 +16,7 @@ export default function HeroSection({ settings, socialLinks }: HeroSectionProps)
   const bio = settings['hero_bio'] ?? 'Building reliable, scalable systems.'
   const email = settings['contact_email']
   const photoUrl = resolveImageUrl(settings['hero_photo_url'])
+  const resumeUrl = resolveImageUrl(settings['resume_url'])
 
   return (
     <section
@@ -81,6 +82,19 @@ export default function HeroSection({ settings, socialLinks }: HeroSectionProps)
           {email && (
             <a href={`mailto:${email}`} className="btn-ghost">
               Get in Touch
+            </a>
+          )}
+          {resumeUrl && (
+            <a href={resumeUrl} download target="_blank" rel="noopener noreferrer" className="btn-ghost">
+              Download CV
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"
+                />
+              </svg>
             </a>
           )}
         </div>

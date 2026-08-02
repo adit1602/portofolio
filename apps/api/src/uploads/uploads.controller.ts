@@ -13,8 +13,18 @@ import { randomUUID } from 'crypto'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
 import { UPLOADS_DIR } from './uploads.constants'
 
-const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
-const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024 // 5MB
+const ALLOWED_MIME_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+  'application/pdf',
+  'audio/mpeg',
+  'audio/mp3',
+  'audio/wav',
+  'audio/ogg',
+]
+const MAX_FILE_SIZE_BYTES = 15 * 1024 * 1024 // 15MB
 
 @Controller('uploads')
 export class UploadsController {
@@ -32,7 +42,7 @@ export class UploadsController {
       limits: { fileSize: MAX_FILE_SIZE_BYTES },
       fileFilter: (_req, file, cb) => {
         if (!ALLOWED_MIME_TYPES.includes(file.mimetype)) {
-          cb(new BadRequestException('Only JPEG, PNG, WEBP, and GIF images are allowed'), false)
+          cb(new BadRequestException('Only images, PDF, and audio files are allowed'), false)
           return
         }
         cb(null, true)

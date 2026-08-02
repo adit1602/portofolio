@@ -17,6 +17,10 @@ export default function SettingsPage() {
   const [photoUrl, setPhotoUrl] = useState('')
   const [cropSrc, setCropSrc] = useState<string | null>(null)
   const photoInputRef = useRef<HTMLInputElement>(null)
+  const [uploadingResume, setUploadingResume] = useState(false)
+  const [resumeUrl, setResumeUrl] = useState('')
+  const [uploadingMusic, setUploadingMusic] = useState(false)
+  const [musicUrl, setMusicUrl] = useState('')
   const [error, setError] = useState('')
   const [successMsg, setSuccessMsg] = useState('')
 
@@ -30,6 +34,8 @@ export default function SettingsPage() {
       setSettings(settingsData)
       setSocialLinks(linksData)
       setPhotoUrl(settingsData.hero_photo_url ?? '')
+      setResumeUrl(settingsData.resume_url ?? '')
+      setMusicUrl(settingsData.bg_music_url ?? '')
     } catch (err: any) {
       setError(err.message)
     } finally {
@@ -90,6 +96,36 @@ export default function SettingsPage() {
     } finally {
       setUploadingPhoto(false)
       closeCropModal()
+    }
+  }
+
+  async function handleResumeChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploadingResume(true)
+    setError('')
+    try {
+      const { url } = await uploadImage(file)
+      setResumeUrl(url)
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setUploadingResume(false)
+    }
+  }
+
+  async function handleMusicChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploadingMusic(true)
+    setError('')
+    try {
+      const { url } = await uploadImage(file)
+      setMusicUrl(url)
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setUploadingMusic(false)
     }
   }
 
@@ -203,6 +239,64 @@ export default function SettingsPage() {
             <div className="space-y-2">
               <Label htmlFor="about_text">About Section Text</Label>
               <Textarea id="about_text" name="about_text" defaultValue={settings.about_text} className="min-h-[150px]" />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="about_text_2">About Section Text (second paragraph, optional)</Label>
+              <Textarea id="about_text_2" name="about_text_2" defaultValue={settings.about_text_2} className="min-h-[100px]" />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="resumeInput">Resume / CV (PDF)</Label>
+              <div className="flex items-center gap-4">
+                <Input
+                  id="resumeInput"
+                  type="file"
+                  accept="application/pdf"
+                  onChange={handleResumeChange}
+                  disabled={uploadingResume}
+                  className="max-w-xs"
+                />
+                {uploadingResume && <span className="text-xs text-slate-500">Uploading...</span>}
+                {resumeUrl && !uploadingResume && (
+                  <a
+                    href={resolveImageUrl(resumeUrl) ?? undefined}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-xs text-indigo-400 hover:underline"
+                  >
+                    View current file
+                  </a>
+                )}
+              </div>
+              <input type="hidden" name="resume_url" value={resumeUrl} />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="musicInput">Background Music (MP3/OGG/WAV)</Label>
+              <div className="flex items-center gap-4">
+                <Input
+                  id="musicInput"
+                  type="file"
+                  accept="audio/mpeg, audio/mp3, audio/wav, audio/ogg"
+                  onChange={handleMusicChange}
+                  disabled={uploadingMusic}
+                  className="max-w-xs"
+                />
+                {uploadingMusic && <span className="text-xs text-slate-500">Uploading...</span>}
+                {musicUrl && !uploadingMusic && (
+                  <a
+                    href={resolveImageUrl(musicUrl) ?? undefined}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-xs text-indigo-400 hover:underline"
+                  >
+                    Preview current track
+                  </a>
+                )}
+              </div>
+              <input type="hidden" name="bg_music_url" value={musicUrl} />
+              <p className="text-xs text-slate-500">Leave empty to hide the music toggle on the site.</p>
             </div>
 
             <Button type="submit" loading={savingSettings}>

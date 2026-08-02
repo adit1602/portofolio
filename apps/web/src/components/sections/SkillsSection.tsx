@@ -1,8 +1,7 @@
 'use client'
 
 import Reveal from '@/components/motion/Reveal'
-import SpotlightGlow from '@/components/motion/SpotlightGlow'
-import { useSpotlight } from '@/components/motion/useSpotlight'
+import { resolveImageUrl } from '@/lib/media'
 
 interface Skill {
   id: string
@@ -23,56 +22,41 @@ interface SkillsSectionProps {
   categories: SkillCategory[]
 }
 
-const LEVEL_LABELS = ['', 'Beginner', 'Basic', 'Intermediate', 'Advanced', 'Expert']
-
-function SkillCategoryCard({ category }: { category: SkillCategory }) {
-  const { ref, handleMouseMove } = useSpotlight<HTMLDivElement>()
+function TechCard({ skill }: { skill: Skill }) {
+  const iconUrl = resolveImageUrl(skill.iconUrl)
 
   return (
-    <div
-      ref={ref}
-      onMouseMove={handleMouseMove}
-      className="glass-card spotlight-card p-6 hover:glow-accent transition-all duration-300"
-    >
-      <SpotlightGlow />
-      <h3 className="text-base font-semibold text-slate-900 dark:text-white mb-5 flex items-center gap-2">
-        <span className="w-2 h-2 rounded-full bg-accent-500 inline-block" />
-        {category.name}
-      </h3>
-
-      <ul className="space-y-4">
-        {category.skills.map((skill) => (
-          <li key={skill.id}>
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{skill.name}</span>
-              <span className="text-xs text-slate-500 dark:text-slate-500 font-mono">
-                {LEVEL_LABELS[skill.level]}
-              </span>
-            </div>
-            <div className="skill-bar">
-              <div
-                className="skill-bar-fill"
-                style={{ width: `${(skill.level / 5) * 100}%` }}
-                role="progressbar"
-                aria-valuenow={skill.level}
-                aria-valuemin={1}
-                aria-valuemax={5}
-                aria-label={`${skill.name} proficiency: ${skill.level}/5`}
-              />
-            </div>
-          </li>
-        ))}
-      </ul>
+    <div className="group flex flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-white/50 dark:bg-dark-800/60 backdrop-blur-sm border border-slate-900/10 dark:border-white/5 hover:border-accent-500/40 dark:hover:border-accent-400/30 hover:-translate-y-1 hover:shadow-lg hover:shadow-accent-500/10 transition-all duration-300">
+      <div className="w-12 h-12 flex items-center justify-center shrink-0">
+        {iconUrl ? (
+          <img
+            src={iconUrl}
+            alt={skill.name}
+            className="w-full h-full object-contain grayscale-[15%] group-hover:grayscale-0 transition-all duration-300"
+          />
+        ) : (
+          <span className="w-full h-full rounded-xl flex items-center justify-center text-sm font-bold text-white bg-gradient-to-br from-accent-500 to-teal-500">
+            {skill.name.slice(0, 2).toUpperCase()}
+          </span>
+        )}
+      </div>
+      <span className="text-sm font-medium text-slate-700 dark:text-slate-300 text-center leading-tight">
+        {skill.name}
+      </span>
     </div>
   )
 }
 
 /**
- * Renders skill categories with animated level bars.
- * Level is 1–5; bar width = (level / 5) * 100%
+ * Flat icon grid of every skill across categories — a quick-scan
+ * tech-stack showcase rather than a detailed proficiency breakdown.
  */
 export default function SkillsSection({ categories }: SkillsSectionProps) {
-  if (categories.length === 0) {
+  const skills = [...categories]
+    .sort((a, b) => a.order - b.order)
+    .flatMap((category) => [...category.skills].sort((a, b) => a.order - b.order))
+
+  if (skills.length === 0) {
     return null
   }
 
@@ -88,11 +72,11 @@ export default function SkillsSection({ categories }: SkillsSectionProps) {
           <div className="w-12 h-1 bg-gradient-to-r from-accent-500 to-teal-400 rounded-full mt-3" />
         </Reveal>
 
-        {/* Category grid */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-2 gap-6">
-          {categories.map((category, idx) => (
-            <Reveal key={category.id} delay={Math.min(idx * 0.08, 0.32)}>
-              <SkillCategoryCard category={category} />
+        {/* Tech grid */}
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4">
+          {skills.map((skill, idx) => (
+            <Reveal key={skill.id} delay={Math.min(idx * 0.03, 0.4)}>
+              <TechCard skill={skill} />
             </Reveal>
           ))}
         </div>
