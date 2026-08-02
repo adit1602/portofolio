@@ -4,8 +4,10 @@ set -e
 echo "==> Running Prisma migrations..."
 ./node_modules/.bin/prisma migrate deploy --schema=./prisma/schema.prisma
 
-echo "==> Seeding database (skip if already seeded)..."
-node prisma/seed.js || echo "Seed skipped (may already exist)"
+if [ "$RUN_SEED" = "true" ]; then
+  echo "==> Seeding database (RUN_SEED=true)..."
+  node prisma/seed.js || echo "Seed failed"
+fi
 
 echo "==> Starting NestJS API..."
 exec "$@"
