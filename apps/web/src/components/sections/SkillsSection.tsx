@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import Reveal from '@/components/motion/Reveal'
 import { resolveImageUrl } from '@/lib/media'
 
@@ -22,20 +23,90 @@ interface SkillsSectionProps {
   categories: SkillCategory[]
 }
 
+// A handful of pleasant, distinct gradients — picked deterministically per
+// skill name so the monogram fallback doesn't render as one repeated tile.
+const MONOGRAM_PALETTES = [
+  'from-indigo-500 to-blue-500',
+  'from-teal-500 to-emerald-500',
+  'from-rose-500 to-orange-500',
+  'from-violet-500 to-fuchsia-500',
+  'from-amber-500 to-orange-600',
+  'from-sky-500 to-cyan-500',
+  'from-emerald-500 to-lime-500',
+  'from-pink-500 to-rose-500',
+]
+
+function paletteFor(name: string): string {
+  let hash = 0
+  for (let i = 0; i < name.length; i++) {
+    hash = (hash * 31 + name.charCodeAt(i)) >>> 0
+  }
+  return MONOGRAM_PALETTES[hash % MONOGRAM_PALETTES.length]!
+}
+
+// Common name → skillicons.dev id mismatches. Anything not listed here falls
+// back to the lowercased, punctuation-stripped skill name as a best guess.
+const SKILLICONS_ALIASES: Record<string, string> = {
+  javascript: 'js',
+  typescript: 'ts',
+  nodejs: 'nodejs',
+  node: 'nodejs',
+  reactjs: 'react',
+  nextjs: 'next',
+  vuejs: 'vue',
+  angularjs: 'angular',
+  python: 'py',
+  golang: 'go',
+  csharp: 'cs',
+  dotnet: 'dotnet',
+  k8s: 'kubernetes',
+  postgresql: 'postgres',
+  mongo: 'mongodb',
+  bashshell: 'bash',
+  shell: 'bash',
+  githubactions: 'githubactions',
+  html5: 'html',
+  css3: 'css',
+  scss: 'sass',
+  tailwindcss: 'tailwind',
+  expressjs: 'express',
+  nest: 'nestjs',
+  springboot: 'spring',
+  vscode: 'vscode',
+  visualstudiocode: 'vscode',
+}
+
+function autoIconSlug(name: string): string {
+  const key = name.toLowerCase().replace(/\+/g, 'plus').replace(/[^a-z0-9]/g, '')
+  return SKILLICONS_ALIASES[key] ?? key
+}
+
 function TechCard({ skill }: { skill: Skill }) {
-  const iconUrl = resolveImageUrl(skill.iconUrl)
+  const [imgFailed, setImgFailed] = useState(false)
+  const uploadedUrl = resolveImageUrl(skill.iconUrl)
+  // No custom icon uploaded? Try to auto-match a real logo from skillicons.dev
+  // before giving up and showing the plain monogram.
+  const imgSrc = uploadedUrl ?? `https://skillicons.dev/icons?i=${autoIconSlug(skill.name)}&theme=light`
 
   return (
     <div className="shrink-0 w-28 sm:w-32 flex flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-white/50 dark:bg-dark-800/60 backdrop-blur-sm border border-slate-900/10 dark:border-white/5 hover:border-accent-500/40 dark:hover:border-accent-400/30 hover:scale-105 hover:shadow-lg hover:shadow-accent-500/10 transition-all duration-300">
       <div className="w-12 h-12 flex items-center justify-center shrink-0">
-        {iconUrl ? (
-          <img
-            src={iconUrl}
-            alt={skill.name}
-            className="w-full h-full object-contain grayscale-[15%] group-hover:grayscale-0 transition-all duration-300"
-          />
+        {!imgFailed ? (
+          // White "chip" behind every icon — keeps logos with a baked-in
+          // white background (many brand PNGs) from looking like a stray
+          // white square once the card goes dark in dark mode.
+          <span className="w-full h-full rounded-xl bg-white shadow-sm ring-1 ring-slate-900/5 flex items-center justify-center p-1.5">
+            <img
+              src={imgSrc}
+              alt={skill.name}
+              className="w-full h-full object-contain"
+              onError={() => setImgFailed(true)}
+            />
+          </span>
         ) : (
-          <span className="w-full h-full rounded-xl flex items-center justify-center text-sm font-bold text-white bg-gradient-to-br from-accent-500 to-teal-500">
+          <span
+            className={`w-full h-full rounded-xl flex items-center justify-center text-sm font-bold text-white bg-gradient-to-br ${paletteFor(skill.name)}`}
+          >
             {skill.name.slice(0, 2).toUpperCase()}
           </span>
         )}
