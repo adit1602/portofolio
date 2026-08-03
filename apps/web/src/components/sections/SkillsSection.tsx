@@ -76,22 +76,42 @@ const SKILLICONS_ALIASES: Record<string, string> = {
   visualstudiocode: 'vscode',
 }
 
-function autoIconSlug(name: string): string {
+// Ids confirmed to return a real icon from skillicons.dev (verified against
+// their API — unrecognized ids return a 200 OK with a blank SVG instead of
+// an error, so guessing blindly would silently render an empty chip).
+const SKILLICONS_KNOWN_IDS = new Set([
+  'js', 'ts', 'react', 'next', 'vue', 'angular', 'svelte', 'nodejs', 'express', 'nestjs',
+  'py', 'go', 'rust', 'java', 'php', 'laravel', 'html', 'css', 'sass', 'tailwind', 'bootstrap',
+  'docker', 'kubernetes', 'mongodb', 'postgres', 'mysql', 'redis', 'sqlite', 'graphql',
+  'git', 'github', 'githubactions', 'gitlab', 'bitbucket', 'linux', 'ubuntu', 'bash', 'nginx',
+  'aws', 'gcp', 'azure', 'vercel', 'netlify', 'heroku', 'firebase', 'supabase',
+  'figma', 'vscode', 'androidstudio', 'npm', 'yarn', 'pnpm', 'electron', 'threejs', 'unity',
+  'django', 'flask', 'spring', 'rails', 'ruby', 'redux', 'prisma', 'webpack', 'vite',
+  'jest', 'cypress', 'selenium', 'jenkins', 'terraform', 'ansible', 'grafana', 'prometheus',
+  'kafka', 'rabbitmq', 'elasticsearch', 'kotlin', 'swift', 'dart', 'flutter',
+  'cs', 'dotnet', 'cpp', 'c', 'wasm', 'deno', 'bun', 'nuxt', 'gatsby', 'solidjs', 'astro',
+])
+
+function autoIconSlug(name: string): string | null {
   const key = name.toLowerCase().replace(/\+/g, 'plus').replace(/[^a-z0-9]/g, '')
-  return SKILLICONS_ALIASES[key] ?? key
+  const slug = SKILLICONS_ALIASES[key] ?? key
+  return SKILLICONS_KNOWN_IDS.has(slug) ? slug : null
 }
 
 function TechCard({ skill }: { skill: Skill }) {
   const [imgFailed, setImgFailed] = useState(false)
   const uploadedUrl = resolveImageUrl(skill.iconUrl)
   // No custom icon uploaded? Try to auto-match a real logo from skillicons.dev
-  // before giving up and showing the plain monogram.
-  const imgSrc = uploadedUrl ?? `https://skillicons.dev/icons?i=${autoIconSlug(skill.name)}&theme=light`
+  // — but only for names on the verified whitelist, so an unrecognized skill
+  // (e.g. an internal tool name) falls straight to the monogram instead of a
+  // blank chip.
+  const autoSlug = uploadedUrl ? null : autoIconSlug(skill.name)
+  const imgSrc = uploadedUrl ?? (autoSlug ? `https://skillicons.dev/icons?i=${autoSlug}&theme=light` : null)
 
   return (
     <div className="shrink-0 w-28 sm:w-32 flex flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-white/50 dark:bg-dark-800/60 backdrop-blur-sm border border-slate-900/10 dark:border-white/5 hover:border-accent-500/40 dark:hover:border-accent-400/30 hover:scale-105 hover:shadow-lg hover:shadow-accent-500/10 transition-all duration-300">
       <div className="w-12 h-12 flex items-center justify-center shrink-0">
-        {!imgFailed ? (
+        {imgSrc && !imgFailed ? (
           // White "chip" behind every icon — keeps logos with a baked-in
           // white background (many brand PNGs) from looking like a stray
           // white square once the card goes dark in dark mode.

@@ -359,9 +359,7 @@ export default function SettingsPage() {
                   />
                   {uploadingLinkIcon && <span className="text-xs text-slate-500">Uploading...</span>}
                   {newLinkIcon && !uploadingLinkIcon && (
-                    <span className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white shrink-0">
-                      <SocialIcon icon={newLinkIcon} platform="preview" />
-                    </span>
+                    <SocialIcon icon={newLinkIcon} platform="preview" />
                   )}
                 </div>
                 <p className="text-xs text-slate-500">
@@ -394,9 +392,7 @@ export default function SettingsPage() {
                 {socialLinks.sort((a, b) => a.order - b.order).map(link => (
                   <div key={link.id} className="flex items-center justify-between p-3 rounded-lg border border-white/5 bg-white/5 hover:bg-white/10 transition-colors">
                     <div className="flex items-center gap-3">
-                      <span className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white shrink-0">
-                        <SocialIcon icon={link.icon} platform={link.platform} />
-                      </span>
+                      <SocialIcon icon={link.icon} platform={link.platform} />
                       <div>
                         <div className="text-sm font-medium text-white">{link.platform}</div>
                         <a href={link.url} target="_blank" rel="noreferrer" className="text-xs text-slate-400 hover:text-indigo-400 truncate max-w-[200px] block">

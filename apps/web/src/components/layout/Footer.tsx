@@ -33,7 +33,7 @@ export default function Footer({ settings, socialLinks }: FooterProps) {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={link.platform}
-                  className="text-slate-500 dark:text-slate-500 hover:text-accent-600 dark:hover:text-accent-400 transition-colors duration-200"
+                  className="block hover:-translate-y-0.5 hover:opacity-90 transition-all duration-200"
                 >
                   <SocialIcon icon={link.icon} platform={link.platform} />
                 </a>

@@ -6,7 +6,41 @@
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001'
 
-async function authFetch<T>(path: string, options?: RequestInit): Promise<T> {
+// Dedupes concurrent refresh attempts (e.g. several requests 401 at once)
+// so they all await the same in-flight call instead of racing.
+let refreshPromise: Promise<string | null> | null = null
+
+/**
+ * Exchanges the httpOnly refresh cookie for a new access token, storing it
+ * in localStorage. The API also rotates the refresh cookie on every call,
+ * so as long as this keeps getting called (see AuthenticatedAdminLayout's
+ * periodic timer + the 401 retry below), the session never hits a hard
+ * expiry — only an explicit logout, or the refresh cookie going fully idle
+ * for 30 days, ends it.
+ */
+export async function refreshAccessToken(): Promise<string | null> {
+  if (!refreshPromise) {
+    refreshPromise = (async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/auth/refresh`, {
+          method: 'POST',
+          credentials: 'include',
+        })
+        if (!res.ok) return null
+        const data = (await res.json()) as { accessToken: string }
+        localStorage.setItem('access_token', data.accessToken)
+        return data.accessToken
+      } catch {
+        return null
+      } finally {
+        refreshPromise = null
+      }
+    })()
+  }
+  return refreshPromise
+}
+
+async function authFetch<T>(path: string, options?: RequestInit, isRetry = false): Promise<T> {
   const token = localStorage.getItem('access_token')
   if (!token) {
     throw new Error('Not authenticated')
@@ -14,7 +48,7 @@ async function authFetch<T>(path: string, options?: RequestInit): Promise<T> {
 
   const headers = new Headers(options?.headers)
   headers.set('Authorization', `Bearer ${token}`)
-  
+
   if (!(options?.body instanceof FormData) && !headers.has('Content-Type') && options?.body) {
     headers.set('Content-Type', 'application/json')
   }
@@ -23,6 +57,16 @@ async function authFetch<T>(path: string, options?: RequestInit): Promise<T> {
     ...options,
     headers,
   })
+
+  // Access token expired mid-session (15min lifetime) — silently refresh
+  // and retry once instead of surfacing an error to the user.
+  if (res.status === 401 && !isRetry) {
+    const newToken = await refreshAccessToken()
+    if (newToken) {
+      return authFetch<T>(path, options, true)
+    }
+    localStorage.removeItem('access_token')
+  }
 
   if (!res.ok) {
     // Basic error handling - could be improved based on API response structure

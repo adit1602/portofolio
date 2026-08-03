@@ -4,8 +4,14 @@ import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { clsx } from '@portfolio/ui'
+import { refreshAccessToken } from '@/lib/admin-api'
 
 const API_URL = process.env['NEXT_PUBLIC_API_URL'] ?? 'http://localhost:3001'
+
+// Well under the API's 15min access-token lifetime, so the token never
+// actually goes stale while this layout is mounted — the admin should
+// never be interrupted by a session timeout while the app is open.
+const SILENT_REFRESH_INTERVAL_MS = 10 * 60 * 1000
 
 const NAV_ITEMS = [
   { href: '/admin/dashboard', label: 'Overview', icon: '📊' },
@@ -21,11 +27,35 @@ export default function AuthenticatedAdminLayout({ children }: { children: React
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const token = localStorage.getItem('access_token')
-    if (!token) {
-      router.replace('/admin/login')
-    } else {
-      setLoading(false)
+    let cancelled = false
+
+    async function validateSession() {
+      // Renew right away — this covers both a freshly-expired access token
+      // (the last visit's 15min token has since died) and a page reload,
+      // without ever bouncing the admin to /login while the refresh cookie
+      // (30 days, sliding) is still good.
+      const token = await refreshAccessToken()
+      if (cancelled) return
+      if (!token) {
+        router.replace('/admin/login')
+      } else {
+        setLoading(false)
+      }
+    }
+
+    void validateSession()
+
+    // Keep the access token perpetually fresh while this layout stays
+    // mounted, so the admin is never interrupted mid-session — only an
+    // explicit "Sign Out" click (or the refresh cookie going untouched for
+    // a full 30 days) ends it.
+    const interval = setInterval(() => {
+      void refreshAccessToken()
+    }, SILENT_REFRESH_INTERVAL_MS)
+
+    return () => {
+      cancelled = true
+      clearInterval(interval)
     }
   }, [router])
 

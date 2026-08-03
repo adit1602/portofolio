@@ -53,7 +53,11 @@ export class AuthService {
   }
 
   /**
-   * Issue new access token from a valid refresh token.
+   * Issue a new access token — and a new refresh token — from a valid
+   * refresh token. Rotating the refresh token lets the caller reset the
+   * cookie's maxAge on every call, turning it into a sliding session: as
+   * long as the admin keeps the app open (and it keeps refreshing itself),
+   * the session never hits a hard expiry.
    */
   async refresh(refreshToken: string) {
     try {
@@ -71,8 +75,12 @@ export class AuthService {
         expiresIn: '15m',
         secret: this.config.get<string>('JWT_SECRET'),
       })
+      const newRefreshToken = this.jwtService.sign(newPayload, {
+        expiresIn: '30d',
+        secret: this.config.get<string>('JWT_REFRESH_SECRET'),
+      })
 
-      return { accessToken }
+      return { accessToken, refreshToken: newRefreshToken }
     } catch {
       throw new UnauthorizedException('Invalid refresh token')
     }

@@ -54,18 +54,30 @@ export class AuthController {
 
   /**
    * POST /api/auth/refresh
-   * Reads refresh token from httpOnly cookie and returns a new access token.
+   * Reads refresh token from httpOnly cookie, returns a new access token,
+   * and rotates the refresh cookie (resets its 30-day maxAge) so the
+   * session keeps sliding forward as long as the app keeps calling this.
    */
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  async refresh(@Req() req: Request) {
+  async refresh(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     const refreshToken = req.cookies[REFRESH_TOKEN_COOKIE] as string | undefined
 
     if (!refreshToken) {
       throw new UnauthorizedException('No refresh token')
     }
 
-    return this.authService.refresh(refreshToken)
+    const { accessToken, refreshToken: newRefreshToken } = await this.authService.refresh(refreshToken)
+
+    res.cookie(REFRESH_TOKEN_COOKIE, newRefreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      domain: this.cookieDomain,
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days in ms
+    })
+
+    return { accessToken }
   }
 
   /**
