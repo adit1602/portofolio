@@ -69,7 +69,7 @@ export default function ProjectForm({ initialData }: { initialData?: Project }) 
       order: parseInt(formData.get('order') as string, 10),
       photoUrl: photoUrl || null,
       featured,
-      skills: Array.from(selectedSkills).map(skillId => ({ skillId })),
+      skillIds: Array.from(selectedSkills),
     }
 
     try {
