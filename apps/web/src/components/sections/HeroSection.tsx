@@ -13,7 +13,7 @@ interface HeroSectionProps {
  */
 export default function HeroSection({ settings, socialLinks }: HeroSectionProps) {
   const name = settings['hero_name'] ?? 'John Doe'
-  const title = settings['hero_title'] ?? 'Backend & DevOps Engineer'
+  const title = settings['hero_title'] ?? 'Application Support & DevOps Engineer'
   const bio = settings['hero_bio'] ?? 'Building reliable, scalable systems.'
   const email = settings['contact_email']
   const photoUrl = resolveImageUrl(settings['hero_photo_url'])

@@ -14,12 +14,12 @@ const THEME_INIT_SCRIPT = `
 
 export const metadata: Metadata = {
   title: {
-    default: 'Portfolio — Backend & DevOps Engineer',
+    default: 'Portfolio — Application Support & DevOps Engineer',
     template: '%s | Portfolio',
   },
   description:
-    'Personal portfolio of a backend and DevOps engineer. Specializing in distributed systems, REST APIs, and cloud infrastructure.',
-  keywords: ['backend engineer', 'devops', 'portfolio', 'node.js', 'golang', 'kubernetes'],
+    'Personal portfolio of an application support and DevOps engineer. Specializing in distributed systems, REST APIs, and cloud infrastructure.',
+  keywords: ['application support', 'devops', 'portfolio', 'node.js', 'golang', 'kubernetes'],
   authors: [{ name: 'Portfolio Owner' }],
   openGraph: {
     type: 'website',

@@ -3,7 +3,6 @@ import {
   getSocialLinks,
   getSkillCategories,
   getExperiences,
-  getFeaturedProjects,
   getAllProjects,
 } from '@/lib/api'
 import { resolveImageUrl } from '@/lib/media'
@@ -33,13 +32,12 @@ function computeYearsExperience(experiences: Array<{ startDate: string }>): numb
  */
 export default async function HomePage() {
   // Fetch all data in parallel for efficiency
-  const [settings, socialLinks, skillCategories, experiences, featuredProjects, allProjects] =
+  const [settings, socialLinks, skillCategories, experiences, allProjects] =
     await Promise.all([
       getSiteSettings().catch(() => ({} as Record<string, string>)),
       getSocialLinks().catch(() => []),
       getSkillCategories().catch(() => []),
       getExperiences().catch(() => []),
-      getFeaturedProjects().catch(() => []),
       getAllProjects().catch(() => []),
     ])
 
@@ -57,7 +55,7 @@ export default async function HomePage() {
         <AboutSection settings={settings} stats={aboutStats} />
         <SkillsSection categories={skillCategories} />
         <ExperienceSection experiences={experiences} />
-        <ProjectsSection projects={featuredProjects} />
+        <ProjectsSection projects={allProjects} />
       </main>
       <Footer settings={settings} socialLinks={socialLinks} />
       <MusicToggle musicUrl={resolveImageUrl(settings['bg_music_url'])} />

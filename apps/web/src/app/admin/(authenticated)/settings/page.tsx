@@ -242,7 +242,7 @@ export default function SettingsPage() {
 
             <div className="space-y-2">
               <Label htmlFor="hero_title">Hero Title</Label>
-              <Input id="hero_title" name="hero_title" defaultValue={settings.hero_title} placeholder="Backend & DevOps Engineer" />
+              <Input id="hero_title" name="hero_title" defaultValue={settings.hero_title} placeholder="Application Support & DevOps Engineer" />
             </div>
 
             <div className="space-y-2">
