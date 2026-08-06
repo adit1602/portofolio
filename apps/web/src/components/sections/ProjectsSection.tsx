@@ -1,9 +1,14 @@
 'use client'
 
+import { useState } from 'react'
+import Link from 'next/link'
 import { resolveImageUrl } from '@/lib/media'
 import Reveal from '@/components/motion/Reveal'
 import SpotlightGlow from '@/components/motion/SpotlightGlow'
 import { useSpotlight } from '@/components/motion/useSpotlight'
+
+/** Number of project cards shown before the "show more" toggle appears. */
+const INITIAL_VISIBLE_COUNT = 6
 
 interface ProjectSkillLink {
   skill: { id: string; name: string }
@@ -64,7 +69,7 @@ function ProjectCard({ project }: { project: Project }) {
         </h3>
 
         {/* Description */}
-        <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed flex-1 mb-4">
+        <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed line-clamp-3 mb-4">
           {project.description}
         </p>
 
@@ -81,6 +86,17 @@ function ProjectCard({ project }: { project: Project }) {
 
         {/* Links */}
         <div className="flex items-center gap-3 mt-auto pt-4 border-t border-slate-900/10 dark:border-white/5">
+          <Link
+            href={`/projects/${project.slug}`}
+            aria-label={`${project.title} details`}
+            className="flex items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            Details
+          </Link>
           {project.repoUrl && (
             <a
               href={project.repoUrl}
@@ -116,9 +132,14 @@ function ProjectCard({ project }: { project: Project }) {
 }
 
 export default function ProjectsSection({ projects }: ProjectsSectionProps) {
+  const [expanded, setExpanded] = useState(false)
+
   if (projects.length === 0) {
     return null
   }
+
+  const hasMore = projects.length > INITIAL_VISIBLE_COUNT
+  const visibleProjects = expanded ? projects : projects.slice(0, INITIAL_VISIBLE_COUNT)
 
   return (
     <section id="projects" className="py-24">
@@ -133,13 +154,22 @@ export default function ProjectsSection({ projects }: ProjectsSectionProps) {
         </Reveal>
 
         {/* Project cards grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {projects.map((project, idx) => (
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
+          {visibleProjects.map((project, idx) => (
             <Reveal key={project.id} delay={Math.min(idx * 0.08, 0.32)}>
               <ProjectCard project={project} />
             </Reveal>
           ))}
         </div>
+
+        {/* Show more / less toggle */}
+        {hasMore && (
+          <div className="flex justify-center mt-10">
+            <button type="button" onClick={() => setExpanded((v) => !v)} className="btn-ghost">
+              {expanded ? 'Lihat Lebih Sedikit' : `Lihat Selengkapnya (${projects.length - INITIAL_VISIBLE_COUNT} lainnya)`}
+            </button>
+          </div>
+        )}
       </div>
     </section>
   )

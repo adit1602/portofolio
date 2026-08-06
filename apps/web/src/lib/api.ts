@@ -91,3 +91,18 @@ export function getAllProjects() {
     }>
   >('/projects')
 }
+
+export function getProjectBySlug(slug: string) {
+  return apiFetch<{
+    id: string
+    title: string
+    slug: string
+    description: string
+    liveUrl: string | null
+    repoUrl: string | null
+    photoUrl: string | null
+    featured: boolean
+    order: number
+    skills: Array<{ skill: { id: string; name: string } }>
+  }>(`/projects/by-slug/${slug}`)
+}
